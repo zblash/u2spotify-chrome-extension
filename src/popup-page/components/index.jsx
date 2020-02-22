@@ -21,7 +21,6 @@ const StyledLoginBtn = styled.button`
 const StyledVideoListWrapper = styled.div`
   width: 90%;
   margin: auto;
-  height: 200px;
   border: 1px solid #ddd;
   border-radius: 7px;
 `;
@@ -30,6 +29,9 @@ const StyledVideoWrapper = styled.div`
   border-bottom: 1px solid #ddd;
   display: flex;
   justify-content: start;
+  :last-child {
+    border: none;
+  }
 `;
 const StyledVideoDesc = styled.p`
   margin: 6px 0 6px 6px;
@@ -38,6 +40,31 @@ const StyledVideoCheckBox = styled.input`
   margin: 6px 0 6px 6px;
   width: 18px;
   height: 18px;
+`;
+const StyledPlayListWrapper = styled.div`
+  margin: 10px auto 0 auto;
+  width: 90%;
+  height: 30px;
+  display: flex;
+  justify-content: space-between;
+`;
+const StyledPlayListSelect = styled.select`
+  border: 2px solid #ddd;
+  background-color: #fff;
+  border-radius: 100px;
+  width: 50%;
+  height: 30px;
+`;
+const StyledAddBtn = styled.button`
+  background-color: #1ed760;
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  border-radius: 500px;
+  cursor: pointer;
+  width: 40%;
+  height: 30px;
 `;
 
 const IndexPage = () => {
@@ -85,6 +112,14 @@ const IndexPage = () => {
           </StyledVideoDesc>
         </StyledVideoWrapper>
       </StyledVideoListWrapper>
+      <StyledPlayListWrapper>
+        <StyledPlayListSelect>
+          <option>List1</option>
+          <option>List2</option>
+          <option>List3</option>
+        </StyledPlayListSelect>
+        <StyledAddBtn>Add to Playlist</StyledAddBtn>
+      </StyledPlayListWrapper>
     </StyledWrapper>
   );
 };
