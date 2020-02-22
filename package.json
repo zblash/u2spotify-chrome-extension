@@ -1,0 +1,56 @@
+{
+  "name": "u2-Spotify",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server --config ./webpack.config.js --mode development",
+    "dev": "webpack --watch --progress --colors --config webpack.config.js --mode=development",
+    "build": "webpack --progress --colors --config webpack.config.js --mode=production",
+    "jsdoc": "jsdoc src -r",
+    "deploy_jsdoc": "yarn jsdoc &&  gh-pages -d out",
+    "prettier_check_src": "prettier --check src/**/*.{js,jsx}",
+    "prettier_check_popup": "prettier --check src/**/*.{js,jsx}",
+    "prettier_check_option": "prettier --check src/**/*.{js,jsx}",
+    "prettier_check_content": "prettier --check src/**/*.{js,jsx}",
+    "test": "yarn prettier_check_src && yarn prettier_check_popup && yarn prettier_check_option && yarn prettier_check_content && yarn build"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.8.4",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-syntax-class-properties": "^7.8.3",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/plugin-transform-runtime": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "@babel/preset-react": "^7.8.3",
+    "babel-loader": "^8.0.6",
+    "copy-webpack-plugin": "^5.1.1",
+    "dotenv": "^8.2.0",
+    "file-loader": "^5.1.0",
+    "gh-pages": "^2.2.0",
+    "husky": "^4.2.3",
+    "image-webpack-loader": "^6.0.0",
+    "jsdoc": "^3.6.3",
+    "prettier": "1.18.2",
+    "pretty-quick": "^2.0.0",
+    "react-hot-loader": "^4.12.10",
+    "webpack": "4.41.5",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "3.10.2"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.8.3",
+    "@babel/runtime": "^7.8.4",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "styled-components": "^5.0.1"
+  }
+}

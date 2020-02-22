@@ -1,0 +1,2 @@
+export const YOUTUBE_KEY = "AIzaSyCIY_699dZGWHbuo52ro6jV8n24mLDaCvE";
+export const SPOTIFY_CLIENT = "20e0094213444de38370aa8c505d3c00";

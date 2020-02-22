@@ -1,0 +1,31 @@
+{
+  "name": "U2Spotify",
+  "version": "1.0.0",
+  "manifest_version": 2,
+  "author": "Yusuf Can 'zblash' Celik",
+  "description": "Add the songs you liked on youtube to your spotify easily",
+  "icons": {
+    "16": "images/icon-16.png",
+    "128": "images/icon-128.png"
+  },
+  "background": {
+    "scripts": ["background.bundle.js"],
+    "persistent": false
+  },
+  "permissions": [
+    "storage",
+    "tabs",
+    "webNavigation",
+    "identity",
+    "https://www.youtube.com/"
+  ],
+  "browser_action": {
+    "default_icon": {
+      "19": "images/icon-19.png",
+      "38": "images/icon-38.png"
+    },
+    "default_title": "U2Spotify",
+    "default_popup": "popup.html"
+  },
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+}
