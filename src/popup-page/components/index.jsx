@@ -68,58 +68,69 @@ const StyledAddBtn = styled.button`
 `;
 
 const IndexPage = () => {
-  const [count, setCount] = useState(0);
-  const [token, setToken] = useState();
-  const onBackgroundMessage = message => {
-    console.log(message);
-    setToken(message.accessToken);
-  };
-  const gotTabs = tabs => {
-    console.log(tabs);
-  };
-  /*
-  React.useEffect(() => {
-    const port = window.chrome.extension.connect({ name: "U2Spotify" });
-    port.postMessage({ startAuthFlow: true, forceAuth: true });
+  const [port, setPort] = useState();
+  const [spotifyToken, setSpotifyToken] = useState();
+
+  const onBackgroundMessage = React.useCallback(
+    message => {
+      setSpotifyToken(message.spotifyKey);
+    },
+    [spotifyToken, setSpotifyToken]
+  );
+
+  const handleFindSong = React.useCallback(() => {
+    port.postMessage({ type: "FIND_SONG" });
+  }, [port]);
+
+  const handleLogin = React.useCallback(() => {
+    port.postMessage({ startAuthFlow: true, forceAuth: false });
     port.onMessage.addListener(onBackgroundMessage);
-    const params = {
-      active: true,
-      currentWindow: true
-    };
-    chrome.tabs.query(params, gotTabs);
+  }, [port]);
+
+  React.useEffect(() => {
+    setPort(window.chrome.extension.connect({ name: "U2Spotify" }));
   }, []);
-*/
+
   return (
     <StyledWrapper>
-      <StyledLoginBtn>Login to Spotify</StyledLoginBtn>
-      <StyledVideoListWrapper>
-        <StyledVideoWrapper>
-          <StyledVideoCheckBox type="checkbox" />
-          <StyledVideoDesc>
-            Baris Akarsu - Bir Sevmek Bin Defa Olmek Demekmis
-          </StyledVideoDesc>
-        </StyledVideoWrapper>
-        <StyledVideoWrapper>
-          <StyledVideoCheckBox type="checkbox" />
-          <StyledVideoDesc>
-            Baris Akarsu - Bir Sevmek Bin Defa Olmek Demekmis
-          </StyledVideoDesc>
-        </StyledVideoWrapper>
-        <StyledVideoWrapper>
-          <StyledVideoCheckBox type="checkbox" />
-          <StyledVideoDesc>
-            Baris Akarsu - Bir Sevmek Bin Defa Olmek Demekmis
-          </StyledVideoDesc>
-        </StyledVideoWrapper>
-      </StyledVideoListWrapper>
-      <StyledPlayListWrapper>
-        <StyledPlayListSelect>
-          <option>List1</option>
-          <option>List2</option>
-          <option>List3</option>
-        </StyledPlayListSelect>
-        <StyledAddBtn>Add to Playlist</StyledAddBtn>
-      </StyledPlayListWrapper>
+      {!spotifyToken && (
+        <StyledLoginBtn onClick={handleLogin}>Login to Spotify</StyledLoginBtn>
+      )}
+      {spotifyToken && (
+        <>
+          <StyledLoginBtn onClick={handleFindSong}>
+            Find in Spotify
+          </StyledLoginBtn>
+          <StyledVideoListWrapper>
+            <StyledVideoWrapper>
+              <StyledVideoCheckBox type="checkbox" />
+              <StyledVideoDesc>
+                Baris Akarsu - Bir Sevmek Bin Defa Olmek Demekmis
+              </StyledVideoDesc>
+            </StyledVideoWrapper>
+            <StyledVideoWrapper>
+              <StyledVideoCheckBox type="checkbox" />
+              <StyledVideoDesc>
+                Baris Akarsu - Bir Sevmek Bin Defa Olmek Demekmis
+              </StyledVideoDesc>
+            </StyledVideoWrapper>
+            <StyledVideoWrapper>
+              <StyledVideoCheckBox type="checkbox" />
+              <StyledVideoDesc>
+                Baris Akarsu - Bir Sevmek Bin Defa Olmek Demekmis
+              </StyledVideoDesc>
+            </StyledVideoWrapper>
+          </StyledVideoListWrapper>
+          <StyledPlayListWrapper>
+            <StyledPlayListSelect>
+              <option>List1</option>
+              <option>List2</option>
+              <option>List3</option>
+            </StyledPlayListSelect>
+            <StyledAddBtn>Add to Playlist</StyledAddBtn>
+          </StyledPlayListWrapper>
+        </>
+      )}
     </StyledWrapper>
   );
 };
