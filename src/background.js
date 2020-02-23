@@ -103,3 +103,8 @@ chrome.extension.onConnect.addListener(messagePort => {
     }
   });
 });
+
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+  const show = tab.url.indexOf("youtube.com/watch") >= 0;
+  chrome.browserAction.setBadgeText({ text: show ? "Hey" : "" });
+});
