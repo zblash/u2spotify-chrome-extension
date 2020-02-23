@@ -1,5 +1,6 @@
 import { YOUTUBE_KEY, SPOTIFY_CLIENT } from "./services/constants/index";
 import { tokens } from "./services/tokens/index";
+import axios from "axios";
 
 /* eslint-disable no-undef */
 let port;
@@ -48,31 +49,46 @@ const launchWebAuthFlow = () => {
 };
 
 const parseCurrentTab = () => {
-  let youtubeId;
-  chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-    let currentTabURL = tabs[0].url;
-    if (currentTabURL.indexOf("youtube.com") >= 0) {
-      let endIdx = currentTabURL.indexOf("&");
-      if (endIdx < 0) {
-        endIdx = currentTabURL.length;
+  return new Promise(function(resolve, reject) {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      let currentTabURL = tabs[0].url;
+      if (currentTabURL.indexOf("youtube.com") >= 0) {
+        let endIdx = currentTabURL.indexOf("&");
+        if (endIdx < 0) {
+          endIdx = currentTabURL.length;
+        }
+        resolve(
+          currentTabURL.substring(currentTabURL.indexOf("v=") + 2, endIdx)
+        );
       }
-      let id = currentTabURL.substring(currentTabURL.indexOf("v=") + 2, endIdx);
-      youtubeId = id;
-    }
+      reject("can't resolved");
+    });
   });
-  return id;
 };
 
-const getSongTitle = youtubeId => {};
+const getSongTitle = async youtubeId => {
+  const headers = {
+    "Content-Type": "application/json"
+  };
+  const youtubeApiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${youtubeId}&fields=items%28snippet%28title,description%29%29&key=${YOUTUBE_KEY}`;
+  return await axios.get(youtubeApiUrl, { headers }).then(d => {
+    if (d.data.items && d.data.items.length > 0) {
+      console.log(d.data.items[0].snippet.description);
+      return d.data.items[0].snippet.title;
+    }
+  });
+};
+
+const solveYoutubeVideo = async () => {
+  const videoId = await parseCurrentTab();
+  const songTitle = await getSongTitle(videoId);
+};
 
 chrome.extension.onConnect.addListener(messagePort => {
   port = messagePort;
-  port.onMessage.addListener(msg => {
+  port.onMessage.addListener(async msg => {
     if (msg.type === "FIND_SONG") {
-      let youtubeId = parseCurrentTab();
-      if (youtubeId) {
-        let songTitle = getSongTitle(youtubeId);
-      }
+      await solveYoutubeVideo();
     }
     if (msg.startAuthFlow) {
       if (msg.forceAuth) {
