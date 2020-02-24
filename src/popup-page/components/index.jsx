@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import { tokens } from "../../services/tokens/index";
 
 const StyledWrapper = styled.div`
   display: flex;
@@ -21,6 +22,7 @@ const StyledLoginBtn = styled.button`
 const StyledVideoListWrapper = styled.div`
   width: 90%;
   margin: auto;
+  min-height: 70px;
   border: 1px solid #ddd;
   border-radius: 7px;
 `;
@@ -69,13 +71,23 @@ const StyledAddBtn = styled.button`
 
 const IndexPage = () => {
   const [port, setPort] = useState();
-  const [spotifyToken, setSpotifyToken] = useState();
+  const [spotifyToken, setSpotifyToken] = useState(tokens.getSpotifyToken());
+  const [playlists, setPlaylists] = useState([]);
+  const [songs, setSongs] = useState([]);
 
   const onBackgroundMessage = React.useCallback(
     message => {
-      setSpotifyToken(message.spotifyKey);
+      if (message.type === "login") {
+        setSpotifyToken(message.spotifyKey);
+      }
+      if (message.type === "playlists") {
+        setPlaylists(message.playlists);
+      }
+      if (message.type === "songs") {
+        setSongs(message.songs);
+      }
     },
-    [spotifyToken, setSpotifyToken]
+    [spotifyToken, setSpotifyToken, playlists]
   );
 
   const handleFindSong = React.useCallback(() => {
@@ -84,13 +96,23 @@ const IndexPage = () => {
 
   const handleLogin = React.useCallback(() => {
     port.postMessage({ startAuthFlow: true, forceAuth: false });
-    port.onMessage.addListener(onBackgroundMessage);
   }, [port]);
 
   React.useEffect(() => {
     setPort(window.chrome.extension.connect({ name: "U2Spotify" }));
   }, []);
 
+  React.useEffect(() => {
+    if (port) {
+      port.onMessage.addListener(onBackgroundMessage);
+    }
+  }, [port]);
+
+  React.useEffect(() => {
+    if (spotifyToken && port) {
+      port.postMessage({ type: "GET_PLAYLISTS" });
+    }
+  }, [spotifyToken, port]);
   return (
     <StyledWrapper>
       {!spotifyToken && (
@@ -102,30 +124,20 @@ const IndexPage = () => {
             Find in Spotify
           </StyledLoginBtn>
           <StyledVideoListWrapper>
-            <StyledVideoWrapper>
-              <StyledVideoCheckBox type="checkbox" />
-              <StyledVideoDesc>
-                Baris Akarsu - Bir Sevmek Bin Defa Olmek Demekmis
-              </StyledVideoDesc>
-            </StyledVideoWrapper>
-            <StyledVideoWrapper>
-              <StyledVideoCheckBox type="checkbox" />
-              <StyledVideoDesc>
-                Baris Akarsu - Bir Sevmek Bin Defa Olmek Demekmis
-              </StyledVideoDesc>
-            </StyledVideoWrapper>
-            <StyledVideoWrapper>
-              <StyledVideoCheckBox type="checkbox" />
-              <StyledVideoDesc>
-                Baris Akarsu - Bir Sevmek Bin Defa Olmek Demekmis
-              </StyledVideoDesc>
-            </StyledVideoWrapper>
+            {songs &&
+              songs.map(song => (
+                <StyledVideoWrapper>
+                  <StyledVideoCheckBox id={song.id} type="checkbox" />
+                  <StyledVideoDesc>{song.name}</StyledVideoDesc>
+                </StyledVideoWrapper>
+              ))}
           </StyledVideoListWrapper>
           <StyledPlayListWrapper>
             <StyledPlayListSelect>
-              <option>List1</option>
-              <option>List2</option>
-              <option>List3</option>
+              {playlists &&
+                playlists.map(item => (
+                  <option value={item.id}>{item.name}</option>
+                ))}
             </StyledPlayListSelect>
             <StyledAddBtn>Add to Playlist</StyledAddBtn>
           </StyledPlayListWrapper>

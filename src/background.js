@@ -1,6 +1,11 @@
 import { YOUTUBE_KEY, SPOTIFY_CLIENT } from "./services/constants/index";
 import { tokens } from "./services/tokens/index";
-import axios from "axios";
+import { getSongTitle, parseSong } from "./services/youtube-service";
+import {
+  searchTracks,
+  getUsersPlaylists,
+  getUserInfos
+} from "./services/spotify-service/index";
 
 /* eslint-disable no-undef */
 let port;
@@ -66,37 +71,38 @@ const parseCurrentTab = () => {
   });
 };
 
-const getSongTitle = async youtubeId => {
-  const headers = {
-    "Content-Type": "application/json"
-  };
-  const youtubeApiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${youtubeId}&fields=items%28snippet%28title,description%29%29&key=${YOUTUBE_KEY}`;
-  return await axios.get(youtubeApiUrl, { headers }).then(d => {
-    if (d.data.items && d.data.items.length > 0) {
-      console.log(d.data.items[0].snippet.description);
-      return d.data.items[0].snippet.title;
-    }
-  });
-};
-
 const solveYoutubeVideo = async () => {
   const videoId = await parseCurrentTab();
   const songTitle = await getSongTitle(videoId);
+  return parseSong(songTitle);
 };
 
 chrome.extension.onConnect.addListener(messagePort => {
   port = messagePort;
   port.onMessage.addListener(async msg => {
+    if (msg.type === "GET_PLAYLISTS") {
+      const spotifyPlaylists = await getUsersPlaylists(accessToken);
+      console.log(spotifyPlaylists);
+      port.postMessage({
+        type: "playlists",
+        playlists: spotifyPlaylists
+      });
+    }
     if (msg.type === "FIND_SONG") {
-      await solveYoutubeVideo();
+      const song = await solveYoutubeVideo();
+      const songList = await searchTracks(song, accessToken);
+      port.postMessage({
+        type: "songs",
+        songs: songList
+      });
     }
     if (msg.startAuthFlow) {
       if (msg.forceAuth) {
         accessToken = null;
       }
       startAuthFlow();
-
       port.postMessage({
+        type: "login",
         youtubeKey: YOUTUBE_KEY,
         spotifyKey: accessToken
       });
