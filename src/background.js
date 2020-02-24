@@ -1,10 +1,10 @@
 import { YOUTUBE_KEY, SPOTIFY_CLIENT } from "./services/constants/index";
-import { tokens } from "./services/tokens/index";
+import tokens from "./services/tokens/index";
 import { getSongTitle, parseSong } from "./services/youtube-service";
 import {
   searchTracks,
   getUsersPlaylists,
-  getUserInfos
+  addToPlaylist
 } from "./services/spotify-service/index";
 
 /* eslint-disable no-undef */
@@ -12,19 +12,11 @@ let port;
 let accessToken = tokens.getSpotifyToken();
 
 const toQueryString = obj => {
-  let parts = [];
-  for (let i in obj) {
-    if (obj.hasOwnProperty(i)) {
-      parts.push(encodeURIComponent(i) + "=" + encodeURIComponent(obj[i]));
-    }
-  }
+  const parts = [];
+  Object.keys(obj).forEach(key => {
+    parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`);
+  });
   return parts.join("&");
-};
-
-const startAuthFlow = () => {
-  if (!accessToken) {
-    launchWebAuthFlow();
-  }
 };
 
 const launchWebAuthFlow = () => {
@@ -34,29 +26,35 @@ const launchWebAuthFlow = () => {
     scope: "user-read-private playlist-modify-public playlist-modify-private",
     response_type: "token"
   };
-  let url = "https://accounts.spotify.com/authorize?" + toQueryString(params);
+  const url = `https://accounts.spotify.com/authorize?${toQueryString(params)}`;
   chrome.identity.launchWebAuthFlow(
     {
-      url: url,
+      url,
       interactive: true
     },
     redirectUrl => {
-      let getAccessTokenStartIdx = redirectUrl.indexOf("access_token");
-      let getAccessToken = redirectUrl.substring(
+      const getAccessTokenStartIdx = redirectUrl.indexOf("access_token");
+      const getAccessToken = redirectUrl.substring(
         getAccessTokenStartIdx + 13,
         redirectUrl.length
       );
-      let getAccessTokenEndIdx = getAccessToken.indexOf("&");
+      const getAccessTokenEndIdx = getAccessToken.indexOf("&");
       accessToken = getAccessToken.substr(0, getAccessTokenEndIdx);
       tokens.setSpotifyToken(accessToken);
     }
   );
 };
 
-const parseCurrentTab = () => {
-  return new Promise(function(resolve, reject) {
+const startAuthFlow = () => {
+  if (!accessToken) {
+    launchWebAuthFlow();
+  }
+};
+
+const parseCurrentTab = () =>
+  new Promise((resolve, reject) => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-      let currentTabURL = tabs[0].url;
+      const currentTabURL = tabs[0].url;
       if (currentTabURL.indexOf("youtube.com") >= 0) {
         let endIdx = currentTabURL.indexOf("&");
         if (endIdx < 0) {
@@ -66,10 +64,9 @@ const parseCurrentTab = () => {
           currentTabURL.substring(currentTabURL.indexOf("v=") + 2, endIdx)
         );
       }
-      reject("can't resolved");
+      reject(new Error("can't resolved"));
     });
   });
-};
 
 const solveYoutubeVideo = async () => {
   const videoId = await parseCurrentTab();
@@ -82,7 +79,6 @@ chrome.extension.onConnect.addListener(messagePort => {
   port.onMessage.addListener(async msg => {
     if (msg.type === "GET_PLAYLISTS") {
       const spotifyPlaylists = await getUsersPlaylists(accessToken);
-      console.log(spotifyPlaylists);
       port.postMessage({
         type: "playlists",
         playlists: spotifyPlaylists
@@ -107,10 +103,13 @@ chrome.extension.onConnect.addListener(messagePort => {
         spotifyKey: accessToken
       });
     }
+    if (msg.type === "ADD_TO_PLAYLIST") {
+      await addToPlaylist(msg.playlistId, msg.songUris, accessToken);
+    }
   });
 });
 
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   const show = tab.url.indexOf("youtube.com/watch") >= 0;
   chrome.browserAction.setBadgeText({ text: show ? "Hey" : "" });
 });

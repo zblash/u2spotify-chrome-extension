@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { tokens } from "../../services/tokens/index";
+import tokens from "../../services/tokens/index";
 
 const StyledWrapper = styled.div`
   display: flex;
@@ -67,14 +67,20 @@ const StyledAddBtn = styled.button`
   cursor: pointer;
   width: 40%;
   height: 30px;
+  :disabled {
+    background-color: #ddd;
+    color: #000;
+  }
 `;
 
 const IndexPage = () => {
   const [port, setPort] = useState();
   const [spotifyToken, setSpotifyToken] = useState(tokens.getSpotifyToken());
   const [playlists, setPlaylists] = useState([]);
+  const [selectedUris, setSelectedUris] = useState([]);
   const [songs, setSongs] = useState([]);
-
+  const [selectedPlaylist, setSelectedPlaylist] = useState();
+  console.log(selectedPlaylist);
   const onBackgroundMessage = React.useCallback(
     message => {
       if (message.type === "login") {
@@ -90,6 +96,18 @@ const IndexPage = () => {
     [spotifyToken, setSpotifyToken, playlists]
   );
 
+  const handleSelect = React.useCallback(
+    e => {
+      const { id } = e.target;
+      if (e.target.checked) {
+        setSelectedUris(oldArray => [...oldArray, id]);
+      } else {
+        setSelectedUris(selectedUris.filter(item => item !== id));
+      }
+    },
+    [selectedUris]
+  );
+
   const handleFindSong = React.useCallback(() => {
     port.postMessage({ type: "FIND_SONG" });
   }, [port]);
@@ -97,6 +115,18 @@ const IndexPage = () => {
   const handleLogin = React.useCallback(() => {
     port.postMessage({ startAuthFlow: true, forceAuth: false });
   }, [port]);
+
+  const handleAdd = React.useCallback(() => {
+    port.postMessage({
+      type: "ADD_TO_PLAYLIST",
+      songUris: selectedUris,
+      playlistId: selectedPlaylist
+    });
+  }, [port, selectedUris, selectedPlaylist]);
+
+  const handlePlaylistChange = React.useCallback(e => {
+    setSelectedPlaylist(e.target.value);
+  }, []);
 
   React.useEffect(() => {
     setPort(window.chrome.extension.connect({ name: "U2Spotify" }));
@@ -126,26 +156,35 @@ const IndexPage = () => {
           <StyledVideoListWrapper>
             {songs &&
               songs.map(song => (
-                <StyledVideoWrapper>
-                  <StyledVideoCheckBox id={song.id} type="checkbox" />
+                <StyledVideoWrapper key={song.id}>
+                  <StyledVideoCheckBox
+                    id={song.uri}
+                    onChange={handleSelect}
+                    type="checkbox"
+                  />
                   <StyledVideoDesc>{song.name}</StyledVideoDesc>
                 </StyledVideoWrapper>
               ))}
           </StyledVideoListWrapper>
           <StyledPlayListWrapper>
-            <StyledPlayListSelect>
+            <StyledPlayListSelect onChange={handlePlaylistChange}>
+              <option>Select playlist</option>
               {playlists &&
                 playlists.map(item => (
                   <option value={item.id}>{item.name}</option>
                 ))}
             </StyledPlayListSelect>
-            <StyledAddBtn>Add to Playlist</StyledAddBtn>
+            <StyledAddBtn
+              disabled={selectedUris.length === 0 || !selectedPlaylist}
+              onClick={handleAdd}
+            >
+              Add to Playlist
+            </StyledAddBtn>
           </StyledPlayListWrapper>
         </>
       )}
     </StyledWrapper>
   );
 };
-const PIndexPage = React.memo(IndexPage);
 
-export { PIndexPage as IndexPage };
+export default React.memo(IndexPage);
