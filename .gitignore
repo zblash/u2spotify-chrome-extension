@@ -6,3 +6,6 @@ dist/
 out/
 yarn.lock
 yarn-error.log
+*.log
+.eslintcache
+package-lock.json
