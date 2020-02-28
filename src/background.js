@@ -88,7 +88,6 @@ chrome.extension.onConnect.addListener(messagePort => {
     }
     if (msg.type === "FIND_SONG") {
       const song = await solveYoutubeVideo();
-      console.log(song);
       const songList = await searchTracks(song, accessToken);
       port.postMessage({
         type: "songs",
