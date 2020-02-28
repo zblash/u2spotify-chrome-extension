@@ -74,7 +74,6 @@ const StyledAddBtn = styled.button`
 `;
 
 const IndexPage = () => {
-  const spotifyExpireTime = 3600000;
   const [port, setPort] = useState();
   const [spotifyToken, setSpotifyToken] = useState(tokens.getSpotifyToken());
   const [playlists, setPlaylists] = useState([]);
@@ -130,7 +129,6 @@ const IndexPage = () => {
 
   React.useEffect(() => {
     if (new Date().getTime() >= tokens.getSpotifyTokenExpire()) {
-      console.log("ise bak yaw");
       setSpotifyToken("");
       tokens.setSpotifyToken("");
     }
