@@ -10,6 +10,7 @@ import {
 /* eslint-disable no-undef */
 let port;
 let accessToken = tokens.getSpotifyToken();
+const spotifyExpireTime = 3600000;
 
 const toQueryString = obj => {
   const parts = [];
@@ -41,12 +42,13 @@ const launchWebAuthFlow = () => {
       const getAccessTokenEndIdx = getAccessToken.indexOf("&");
       accessToken = getAccessToken.substr(0, getAccessTokenEndIdx);
       tokens.setSpotifyToken(accessToken);
+      tokens.setSpotifyTokenExpire(new Date().getTime() + spotifyExpireTime);
     }
   );
 };
 
 const startAuthFlow = () => {
-  if (!accessToken) {
+  if (!accessToken || new Date().getTime() >= tokens.getSpotifyTokenExpire()) {
     launchWebAuthFlow();
   }
 };

@@ -74,13 +74,13 @@ const StyledAddBtn = styled.button`
 `;
 
 const IndexPage = () => {
+  const spotifyExpireTime = 3600000;
   const [port, setPort] = useState();
   const [spotifyToken, setSpotifyToken] = useState(tokens.getSpotifyToken());
   const [playlists, setPlaylists] = useState([]);
   const [selectedUris, setSelectedUris] = useState([]);
   const [songs, setSongs] = useState([]);
   const [selectedPlaylist, setSelectedPlaylist] = useState();
-  console.log(selectedPlaylist);
   const onBackgroundMessage = React.useCallback(
     message => {
       if (message.type === "login") {
@@ -129,6 +129,11 @@ const IndexPage = () => {
   }, []);
 
   React.useEffect(() => {
+    if (new Date().getTime() >= tokens.getSpotifyTokenExpire()) {
+      console.log("ise bak yaw");
+      setSpotifyToken("");
+      tokens.setSpotifyToken("");
+    }
     setPort(window.chrome.extension.connect({ name: "U2Spotify" }));
   }, []);
 
