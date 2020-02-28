@@ -15,4 +15,4 @@ export const getSongTitle = async youtubeId => {
 };
 
 export const parseSong = songTitle =>
-  songTitle.replace(/\&|feat\.|remix|\(.*?\)|#|&|amp;/gim, ""); // eslint-disable-line
+  songTitle.replace(/\&|feat\.|remix|\(.*?\)|\[.*?\]|#|&|amp;/gim, ""); // eslint-disable-line
