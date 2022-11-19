@@ -52,7 +52,7 @@
     "pretty-quick": "^2.0.0",
     "react-hot-loader": "^4.12.10",
     "webpack": "4.41.5",
-    "webpack-cli": "^3.3.11",
+    "webpack-cli": "^3.3.12",
     "webpack-dev-server": "3.10.2"
   },
   "dependencies": {
